@@ -1,47 +1,49 @@
 # as-platform
 
-Домашняя платформа для разработчиков (Platform Engineering) на K3s. Одна организация GitHub, один dev-контур, одна нода (i3-8100T, 16 GB).
+🇷🇺 [Русская версия](README_RUS.md)
 
-Идея: разработчик выбирает в Backstage шаблон, язык и нужные опции, а платформа создаёт репозиторий, подключает CI/CD и security, собирает подписанный образ и выкатывает его через GitOps.
+A home developer platform (Platform Engineering) on K3s. One GitHub organization, one dev environment, one node (i3-8100T, 16 GB).
 
-## Как это работает
+The idea: a developer picks a template, a language and the options they need in Backstage, and the platform creates a repository, wires up CI/CD and security, builds a signed image and rolls it out through GitOps.
 
-1. В Backstage выбираются шаблон, язык и опции: harness [`as-skill`](https://github.com/alexeyshishin/as-skill), security-пайплайн, ночное отключение, деплой в dev.
-2. Создаётся репозиторий сервиса с workflow из `ci-templates` и PR в `k3s` с `apps/<name>/`.
-3. Push запускает CI на эфемерном раннере: тесты, security, сборка на golden-образах, push в Zot, подпись.
-4. `deploy-bump` меняет `image.tag` в `k3s/apps/<name>/values.yaml`, Argo CD синхронизирует, Backstage показывает статус.
+## How it works
 
-## Стек
+1. In Backstage you choose a template, a language and options: the [`as-skill`](https://github.com/alexeyshishin/as-skill) harness, a security pipeline, nightly shutdown, deploy to dev.
+2. A service repository is created with workflows from `ci-templates`, plus a PR to `k3s` with `apps/<name>/`.
+3. A push triggers CI on an ephemeral runner: tests, security, a build on golden images, push to Zot, signing.
+4. `deploy-bump` changes `image.tag` in `k3s/apps/<name>/values.yaml`, Argo CD syncs, and Backstage shows the status.
 
-- **Оркестрация:** K3s, Traefik, cert-manager с внутренним CA
+## Stack
+
+- **Orchestration:** K3s, Traefik, cert-manager with an internal CA
 - **GitOps:** Argo CD (app-of-apps, ApplicationSet), Sealed Secrets
-- **CI/CD:** GitHub Actions, переиспользуемые actions, self-hosted раннеры на KEDA со scale-to-zero
-- **Supply chain:** реестр Zot, подпись cosign, SBOM, rootless-сборка через buildah
-- **Хосты:** Ansible
-- **Портал:** Backstage
+- **CI/CD:** GitHub Actions, reusable actions, self-hosted runners on KEDA with scale-to-zero
+- **Supply chain:** Zot registry, cosign signing, SBOM, rootless builds with buildah
+- **Hosts:** Ansible
+- **Portal:** Backstage
 
-## Репозитории
+## Repositories
 
-| Репозиторий | Назначение | Статус |
-|-------------|------------|--------|
-| [`k3s`](https://github.com/as-platform/k3s) | GitOps-репозиторий кластера: Argo CD, bootstrap, infra, apps | работает |
-| [`homelab-infra`](https://github.com/as-platform/homelab-infra) | Ansible-роли для хостов | работает |
-| [`ci-templates`](https://github.com/as-platform/ci-templates) | Переиспользуемые CI-actions | работает |
-| [`backstage`](https://github.com/as-platform/backstage) | Портал разработчика | в разработке |
-| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Шаблоны репозиториев и skeletons | в разработке |
-| `golden-images` | Базовые образы: cosign, SBOM, rootless buildah, hadolint | приватный |
-| `helm-charts` | Общий Helm-чарт `app`: Deployment, Service, Ingress, ScaledObject с cron | приватный, в разработке |
+| Repository | Purpose | Status |
+|------------|---------|--------|
+| [`k3s`](https://github.com/as-platform/k3s) | Cluster GitOps repository: Argo CD, bootstrap, infra, apps | working |
+| [`homelab-infra`](https://github.com/as-platform/homelab-infra) | Ansible roles for the hosts | working |
+| [`ci-templates`](https://github.com/as-platform/ci-templates) | Reusable CI actions | working |
+| [`backstage`](https://github.com/as-platform/backstage) | Developer portal | in development |
+| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Repository templates and skeletons | in development |
+| `golden-images` | Base images: cosign, SBOM, rootless buildah, hadolint | private |
+| `helm-charts` | Shared Helm chart `app`: Deployment, Service, Ingress, ScaledObject with cron | private, in development |
 
-`golden-images` и `helm-charts` закрыты намеренно: их CI работает на домашнем раннере и пушит в закрытый реестр. У `helm-charts` публикация чарта в Zot ещё в работе.
+`golden-images` and `helm-charts` are private on purpose: their CI runs on the home runner and pushes to a private registry. For `helm-charts`, publishing the chart to Zot is still in progress.
 
-## Решения и компромиссы
+## Decisions and trade-offs
 
-- **Раннеры только для приватных репозиториев.** Форк публичного репозитория с self-hosted раннером даёт выполнение чужого кода в локальной сети. Поэтому job'ы на домашних раннерах живут только в приватных репозиториях, раннеры эфемерные, PAT убирается из окружения job'ов, сборка идёт без docker.
-- **Traefik вместо ingress-nginx.** `ingress-nginx` снят с поддержки в марте 2026. Используются стандартные `Ingress`, а не `IngressRoute`, чтобы контроллер можно было заменить.
-- **Внутренний CA на 10 лет.** Домена нет, Let's Encrypt не подходит, сертификаты выпускает cert-manager.
+- **Runners only for private repositories.** A fork of a public repository with a self-hosted runner would execute someone else's code on the local network. That is why jobs on home runners live only in private repositories, the runners are ephemeral, the PAT is removed from the job environment, and builds run without docker.
+- **Traefik instead of ingress-nginx.** `ingress-nginx` was retired in March 2026. Standard `Ingress` resources are used rather than `IngressRoute`, so the controller can be replaced.
+- **An internal CA for 10 years.** There is no domain, so Let's Encrypt does not fit; certificates are issued by cert-manager.
 
-## Ограничения
+## Limitations
 
-Одна нода, один dev-контур, без staging и prod. Backstage и шаблоны ещё в разработке, ночное отключение инфраструктуры пока не реализовано.
+One node, one dev environment, no staging or prod. Backstage and the templates are still in development, and nightly infrastructure shutdown is not implemented yet.
 
-Деплой идёт только через Argo CD.
+Deployment goes through Argo CD only.
