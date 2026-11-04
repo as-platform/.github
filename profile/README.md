@@ -27,12 +27,12 @@
 | [`k3s`](https://github.com/as-platform/k3s) | GitOps-репозиторий кластера: Argo CD, bootstrap, infra, apps | работает |
 | [`homelab-infra`](https://github.com/as-platform/homelab-infra) | Ansible-роли для хостов | работает |
 | [`ci-templates`](https://github.com/as-platform/ci-templates) | Переиспользуемые CI-actions | работает |
-| [`helm-charts`](https://github.com/as-platform/helm-charts) | Общие Helm-чарты | работает |
 | [`backstage`](https://github.com/as-platform/backstage) | Портал разработчика | в разработке |
 | [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Шаблоны репозиториев и skeletons | в разработке |
 | `golden-images` | Базовые образы: cosign, SBOM, rootless buildah, hadolint | приватный |
+| `helm-charts` | Общий Helm-чарт `app`: Deployment, Service, Ingress, ScaledObject с cron | приватный, в разработке |
 
-`golden-images` закрыт намеренно: его CI работает на домашнем раннере и пушит в закрытый реестр.
+`golden-images` и `helm-charts` закрыты намеренно: их CI работает на домашнем раннере и пушит в закрытый реестр. У `helm-charts` публикация чарта в Zot ещё в работе.
 
 ## Решения и компромиссы
 
