@@ -2,7 +2,12 @@
 
 🇬🇧 [English version](README.md)
 
-Домашняя платформа для разработчиков (Platform Engineering) на K3s. Одна организация GitHub, один dev-контур, одна нода (i3-8100T, 16 GB).
+Домашняя платформа для разработчиков (Platform Engineering) на K3s. Одна организация GitHub, один dev-контур.
+
+Узлы:
+
+- Dell Optiplex 3060 Micro (i3-8100T, 16 GB RAM, 256 GB M.2 NVMe) - k3s server
+- Dell Optiplex 5060 Micro (i5-8500T, 16 GB RAM, 256 GB M.2 NVMe) - k3s agent
 
 Идея: разработчик выбирает в Backstage шаблон, язык и нужные опции, а платформа создаёт репозиторий, подключает CI/CD и security, собирает подписанный образ и выкатывает его через GitOps.
 
@@ -24,15 +29,17 @@
 
 ## Репозитории
 
-| Репозиторий | Назначение | Статус |
-|-------------|------------|--------|
-| [`k3s`](https://github.com/as-platform/k3s) | GitOps-репозиторий кластера: Argo CD, bootstrap, infra, apps | работает |
-| [`homelab-infra`](https://github.com/as-platform/homelab-infra) | Ansible-роли для хостов | работает |
-| [`ci-templates`](https://github.com/as-platform/ci-templates) | Переиспользуемые CI-actions | работает |
-| [`backstage`](https://github.com/as-platform/backstage) | Портал разработчика | в разработке |
-| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Шаблоны репозиториев и skeletons | в разработке |
-| `golden-images` | Базовые образы: cosign, SBOM, rootless buildah, hadolint | приватный |
-| `helm-charts` | Общий Helm-чарт `app`: Deployment, Service, Ingress, ScaledObject с cron | приватный, в разработке |
+
+| Репозиторий                                                                 | Назначение                                                               | Статус                  |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------- |
+| [`k3s`](https://github.com/as-platform/k3s)                                 | GitOps-репозиторий кластера: Argo CD, bootstrap, infra, apps             | работает                |
+| [`homelab-infra`](https://github.com/as-platform/homelab-infra)             | Ansible-роли для хостов                                                  | работает                |
+| [`ci-templates`](https://github.com/as-platform/ci-templates)               | Переиспользуемые CI-actions                                              | работает                |
+| [`backstage`](https://github.com/as-platform/backstage)                     | Портал разработчика                                                      | в разработке            |
+| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Шаблоны репозиториев и skeletons                                         | в разработке            |
+| `golden-images`                                                             | Базовые образы: cosign, SBOM, rootless buildah, hadolint                 | приватный               |
+| `helm-charts`                                                               | Общий Helm-чарт `app`: Deployment, Service, Ingress, ScaledObject с cron | приватный, в разработке |
+
 
 `golden-images` и `helm-charts` закрыты намеренно: их CI работает на домашнем раннере и пушит в закрытый реестр. У `helm-charts` публикация чарта в Zot ещё в работе.
 
@@ -44,6 +51,6 @@
 
 ## Ограничения
 
-Одна нода, один dev-контур, без staging и prod. Backstage и шаблоны ещё в разработке, ночное отключение инфраструктуры пока не реализовано.
+Две ноды, один dev-контур, без staging и prod. Backstage и шаблоны ещё в разработке, ночное отключение инфраструктуры пока не реализовано.
 
 Деплой идёт только через Argo CD.

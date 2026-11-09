@@ -2,7 +2,12 @@
 
 🇷🇺 [Русская версия](README_RUS.md)
 
-A home developer platform (Platform Engineering) on K3s. One GitHub organization, one dev environment, one node (i3-8100T, 16 GB).
+A home developer platform (Platform Engineering) on K3s. One GitHub organization, one dev environment, two nodes.
+
+Nodes:
+
+- Dell Optiplex 3060 Micro (i3-8100T, 16 GB RAM, 256 GB M.2 NVMe) - k3s server
+- Dell Optiplex 5060 Micro (i5-8500T, 16 GB RAM, 256 GB M.2 NVMe) - k3s agent
 
 The idea: a developer picks a template, a language and the options they need in Backstage, and the platform creates a repository, wires up CI/CD and security, builds a signed image and rolls it out through GitOps.
 
@@ -44,6 +49,6 @@ The idea: a developer picks a template, a language and the options they need in 
 
 ## Limitations
 
-One node, one dev environment, no staging or prod. Backstage and the templates are still in development, and nightly infrastructure shutdown is not implemented yet.
+Two nodes, one dev environment, no staging or prod. Backstage and the templates are still in development, and nightly infrastructure shutdown is not implemented yet.
 
 Deployment goes through Argo CD only.
