@@ -38,7 +38,7 @@ The idea: a developer picks a template, a language and the options they need in 
 
 ## Decisions and trade-offs
 
-- **Runners only for private repositories.** A fork of a public repository with a self-hosted runner would execute someone else's code on the local network. That is why jobs on home runners live only in private repositories, the runners are ephemeral, the PAT is removed from the job environment, and builds run without docker.
+- **Home runners only for an allowlist of repositories.** A pull request from a fork can add its own workflow and run someone else's code on the local network, so access is layered. The runner group serves only `backstage` and the private build repositories, and runs from external contributors need manual approval. A NetworkPolicy lets runner pods reach only DNS, Zot through Traefik and the internet on ports 80 and 443; the rest of the LAN, the node and cluster services are closed, which a regression workflow checks. Runners are ephemeral, the PAT is removed from the job environment, and builds run without docker.
 - **Traefik instead of ingress-nginx.** `ingress-nginx` was retired in March 2026. Standard `Ingress` resources are used rather than `IngressRoute`, so the controller can be replaced.
 - **An internal CA for 10 years.** There is no domain, so Let's Encrypt does not fit; certificates are issued by cert-manager.
 
