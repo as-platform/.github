@@ -6,15 +6,15 @@ A home developer platform (Platform Engineering) on K3s. One GitHub organization
 
 Nodes:
 
-- Dell Optiplex 3060 Micro (i3-8100T, 16 GB RAM, 256 GB M.2 NVMe) - k3s server
-- Dell Optiplex 5060 Micro (i5-8500T, 16 GB RAM, 256 GB M.2 NVMe) - k3s agent
+- Dell Optiplex 3060 Micro (i3-8100T, 16 GB RAM, 256 GB M.2 NVMe) — k3s server
+- Dell Optiplex 5060 Micro (i5-8500T, 16 GB RAM, 256 GB M.2 NVMe) — k3s agent
 
-The idea: a developer picks a template, a language and the options they need in Backstage, and the platform creates a repository, wires up CI/CD and security, builds a signed image and rolls it out through GitOps.
+The idea: a developer picks a template in Backstage, and the platform creates a repository, wires up CI/CD and security, builds a signed image and rolls it out through GitOps.
 
 ## How it works
 
-1. In Backstage you choose a template, a language and options: the [`as-skill`](https://github.com/alexeyshishin/as-skill) harness, a security pipeline, nightly shutdown, deploy to dev.
-2. A service repository is created with workflows from `ci-templates`, plus a PR to `k3s` with `apps/<name>/`.
+1. In Backstage you choose a template (a Go or Python backend, a React frontend or a monorepo), a name, an owner and whether to deploy to dev.
+2. A service repository is created with workflows from `ci-templates`, plus a pull request to `k3s` with `apps/<name>/`.
 3. A push triggers CI on an ephemeral runner: tests, security, a build on golden images, push to Zot, signing.
 4. `deploy-bump` changes `image.tag` in `k3s/apps/<name>/values.yaml`, Argo CD syncs, and Backstage shows the status.
 
@@ -29,17 +29,17 @@ The idea: a developer picks a template, a language and the options they need in 
 
 ## Repositories
 
-| Repository | Purpose | Status |
-|------------|---------|--------|
-| [`k3s`](https://github.com/as-platform/k3s) | Cluster GitOps repository: Argo CD, bootstrap, infra, apps | working |
-| [`homelab-infra`](https://github.com/as-platform/homelab-infra) | Ansible roles for the hosts | working |
-| [`ci-templates`](https://github.com/as-platform/ci-templates) | Reusable CI actions | working |
-| [`backstage`](https://github.com/as-platform/backstage) | Developer portal | in development |
-| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Repository templates and skeletons | in development |
-| `golden-images` | Base images: cosign, SBOM, rootless buildah, hadolint | private |
-| `helm-charts` | Shared Helm chart `app`: Deployment, Service, Ingress, ScaledObject with cron | private, in development |
+| Repository                                                                  | Purpose                                                                       | Status           |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------- |
+| [`k3s`](https://github.com/as-platform/k3s)                                 | Cluster GitOps repository: Argo CD, bootstrap, infra, apps                    | working          |
+| [`homelab-infra`](https://github.com/as-platform/homelab-infra)             | Ansible roles for the hosts                                                   | working          |
+| [`ci-templates`](https://github.com/as-platform/ci-templates)               | Reusable CI actions                                                           | working          |
+| [`backstage`](https://github.com/as-platform/backstage)                     | Developer portal                                                              | working          |
+| [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Repository templates and skeletons                                            | working          |
+| `golden-images`                                                             | Base images: cosign, SBOM, rootless buildah, hadolint                         | working, private |
+| `helm-charts`                                                               | Shared Helm chart `app`: Deployment, Service, Ingress, ScaledObject with cron | working, private |
 
-`golden-images` and `helm-charts` are private on purpose: their CI runs on the home runner and pushes to a private registry. For `helm-charts`, publishing the chart to Zot is still in progress.
+`golden-images` and `helm-charts` are private on purpose: their CI runs on the home runner and pushes to a private registry.
 
 ## Decisions and trade-offs
 
@@ -49,6 +49,6 @@ The idea: a developer picks a template, a language and the options they need in 
 
 ## Limitations
 
-Two nodes, one dev environment, no staging or prod. Backstage and the templates are still in development, and nightly infrastructure shutdown is not implemented yet.
+Two nodes, one dev environment, no staging or prod. The `as-skill` harness option of the templates is postponed, and nightly infrastructure shutdown is not implemented yet.
 
 Deployment goes through Argo CD only.
