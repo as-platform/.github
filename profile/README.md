@@ -21,7 +21,7 @@ The idea: a developer picks a template in Backstage, and the platform creates a 
 ## Stack
 
 - **Orchestration:** K3s, Traefik, cert-manager with an internal CA
-- **GitOps:** Argo CD (app-of-apps, ApplicationSet), Sealed Secrets
+- **GitOps:** Argo CD (app-of-apps, ApplicationSet), OpenBao, External Secrets Operator
 - **CI/CD:** GitHub Actions, reusable actions, self-hosted runners on KEDA with scale-to-zero
 - **Supply chain:** Zot registry, cosign signing, SBOM, rootless builds with buildah
 - **Hosts:** Ansible

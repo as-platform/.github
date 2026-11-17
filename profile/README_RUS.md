@@ -21,7 +21,7 @@
 ## Стек
 
 - **Оркестрация:** K3s, Traefik, cert-manager с внутренним CA
-- **GitOps:** Argo CD (app-of-apps, ApplicationSet), Sealed Secrets
+- **GitOps:** Argo CD (app-of-apps, ApplicationSet), OpenBao, External Secrets Operator
 - **CI/CD:** GitHub Actions, переиспользуемые actions, self-hosted раннеры на KEDA со scale-to-zero
 - **Supply chain:** реестр Zot, подпись cosign, SBOM, rootless-сборка через buildah
 - **Хосты:** Ansible
