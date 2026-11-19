@@ -24,6 +24,7 @@
 - **GitOps:** Argo CD (app-of-apps, ApplicationSet), OpenBao, External Secrets Operator
 - **CI/CD:** GitHub Actions, переиспользуемые actions, self-hosted раннеры на KEDA со scale-to-zero
 - **Supply chain:** реестр Zot, подпись cosign, SBOM, rootless-сборка через buildah
+- **Сканирование безопасности:** gitleaks, kics и checkov запускаются из собственных подписанных образов reusable workflow на домашнем раннере без docker
 - **Хосты:** Ansible
 - **Портал:** Backstage
 
@@ -36,19 +37,20 @@
 | [`ci-templates`](https://github.com/as-platform/ci-templates)               | Переиспользуемые CI-actions                                              | работает            |
 | [`backstage`](https://github.com/as-platform/backstage)                     | Портал разработчика                                                      | работает            |
 | [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Шаблоны репозиториев и skeletons                                         | работает            |
-| `golden-images`                                                             | Базовые образы: cosign, SBOM, rootless buildah, hadolint                 | работает, приватный |
+| [`security-pipeline`](https://github.com/as-platform/security-pipeline)     | Reusable workflow: сканы gitleaks, kics и checkov из подписанных образов | работает (секреты, IaC) |
+| `golden-images`                                                             | Базовые образы и образы сканеров: cosign, SBOM, rootless buildah, hadolint | работает, приватный |
 | `helm-charts`                                                               | Общий Helm-чарт `app`: Deployment, Service, Ingress, ScaledObject с cron | работает, приватный |
 
 `golden-images` и `helm-charts` закрыты намеренно: их CI работает на домашнем раннере и пушит в закрытый реестр.
 
 ## Решения и компромиссы
 
-- **Домашние раннеры только для списка репозиториев.** Pull request из форка может добавить свой workflow и выполнить чужой код в локальной сети, поэтому защита многослойная. Runner group обслуживает только `backstage` и приватные репозитории сборки, а запуски от внешних контрибьюторов требуют ручного одобрения. NetworkPolicy пускает раннер-поды только к DNS, к Zot через Traefik и в интернет по портам 80 и 443; остальная LAN, нода и сервисы кластера закрыты, это проверяет регрессионный workflow. Раннеры эфемерные, PAT убирается из окружения job'ов, сборка идёт без docker.
+- **Домашние раннеры только для списка репозиториев.** Pull request из форка может добавить свой workflow и выполнить чужой код в локальной сети, поэтому защита многослойная. Runner group обслуживает только `backstage`, `security-pipeline` и приватные репозитории сборки, а запуски от внешних контрибьюторов требуют ручного одобрения. NetworkPolicy пускает раннер-поды только к DNS, к Zot через Traefik и в интернет по портам 80 и 443; остальная LAN, нода и сервисы кластера закрыты, это проверяет регрессионный workflow. Раннеры эфемерные, PAT убирается из окружения job'ов, сборка идёт без docker.
 - **Traefik вместо ingress-nginx.** `ingress-nginx` снят с поддержки в марте 2026. Используются стандартные `Ingress`, а не `IngressRoute`, чтобы контроллер можно было заменить.
 - **Внутренний CA на 10 лет.** Домена нет, Let's Encrypt не подходит, сертификаты выпускает cert-manager.
 
 ## Ограничения
 
-Две ноды, один dev-контур, без staging и prod. Опция harness `as-skill` в шаблонах отложена, ночное отключение инфраструктуры пока не реализовано.
+Две ноды, один dev-контур, без staging и prod. Опция harness `as-skill` в шаблонах отложена, ночное отключение инфраструктуры пока не реализовано. `security-pipeline` сканирует только секреты и IaC, сканирование зависимостей и образов не построено, а пайплайны сервисов по-прежнему вызывают сканы из `ci-templates`.
 
 Деплой идёт только через Argo CD.

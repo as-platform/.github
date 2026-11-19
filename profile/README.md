@@ -24,6 +24,7 @@ The idea: a developer picks a template in Backstage, and the platform creates a 
 - **GitOps:** Argo CD (app-of-apps, ApplicationSet), OpenBao, External Secrets Operator
 - **CI/CD:** GitHub Actions, reusable actions, self-hosted runners on KEDA with scale-to-zero
 - **Supply chain:** Zot registry, cosign signing, SBOM, rootless builds with buildah
+- **Security scanning:** gitleaks, kics and checkov run from own signed images by a reusable workflow, on the home runner without docker
 - **Hosts:** Ansible
 - **Portal:** Backstage
 
@@ -36,19 +37,20 @@ The idea: a developer picks a template in Backstage, and the platform creates a 
 | [`ci-templates`](https://github.com/as-platform/ci-templates)               | Reusable CI actions                                                           | working          |
 | [`backstage`](https://github.com/as-platform/backstage)                     | Developer portal                                                              | working          |
 | [`backstage-templates`](https://github.com/as-platform/backstage-templates) | Repository templates and skeletons                                            | working          |
-| `golden-images`                                                             | Base images: cosign, SBOM, rootless buildah, hadolint                         | working, private |
+| [`security-pipeline`](https://github.com/as-platform/security-pipeline)     | Reusable workflow: gitleaks, kics and checkov scans from signed images        | working (secrets, IaC) |
+| `golden-images`                                                             | Base images and scanner images: cosign, SBOM, rootless buildah, hadolint      | working, private |
 | `helm-charts`                                                               | Shared Helm chart `app`: Deployment, Service, Ingress, ScaledObject with cron | working, private |
 
 `golden-images` and `helm-charts` are private on purpose: their CI runs on the home runner and pushes to a private registry.
 
 ## Decisions and trade-offs
 
-- **Home runners only for an allowlist of repositories.** A pull request from a fork can add its own workflow and run someone else's code on the local network, so access is layered. The runner group serves only `backstage` and the private build repositories, and runs from external contributors need manual approval. A NetworkPolicy lets runner pods reach only DNS, Zot through Traefik and the internet on ports 80 and 443; the rest of the LAN, the node and cluster services are closed, which a regression workflow checks. Runners are ephemeral, the PAT is removed from the job environment, and builds run without docker.
+- **Home runners only for an allowlist of repositories.** A pull request from a fork can add its own workflow and run someone else's code on the local network, so access is layered. The runner group serves only `backstage`, `security-pipeline` and the private build repositories, and runs from external contributors need manual approval. A NetworkPolicy lets runner pods reach only DNS, Zot through Traefik and the internet on ports 80 and 443; the rest of the LAN, the node and cluster services are closed, which a regression workflow checks. Runners are ephemeral, the PAT is removed from the job environment, and builds run without docker.
 - **Traefik instead of ingress-nginx.** `ingress-nginx` was retired in March 2026. Standard `Ingress` resources are used rather than `IngressRoute`, so the controller can be replaced.
 - **An internal CA for 10 years.** There is no domain, so Let's Encrypt does not fit; certificates are issued by cert-manager.
 
 ## Limitations
 
-Two nodes, one dev environment, no staging or prod. The `as-skill` harness option of the templates is postponed, and nightly infrastructure shutdown is not implemented yet.
+Two nodes, one dev environment, no staging or prod. The `as-skill` harness option of the templates is postponed, and nightly infrastructure shutdown is not implemented yet. `security-pipeline` scans secrets and IaC only, dependency and container image scanning are not built, and service pipelines still call the scans from `ci-templates`.
 
 Deployment goes through Argo CD only.
